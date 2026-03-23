@@ -1,0 +1,23 @@
+# Build
+build/
+*.exe
+*.out
+
+# Object files
+*.o
+*.obj
+
+# Libraries
+*.a
+*.so
+*.dylib
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+.CMakeLists.txt.swp
+cmake_install.cmake
+Makefile
+
+# IDE
+.vscode/
