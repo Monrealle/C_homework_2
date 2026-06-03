@@ -1,0 +1,103 @@
+#include "../include/csv.h"
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Тест split
+static void testSplit()
+{
+    char* fields[10];
+
+    int cnt = split("a,b,c", ',', fields, 10);
+    assert(cnt == 3);
+    assert(strcmp(fields[0], "a") == 0);
+    assert(strcmp(fields[1], "b") == 0);
+    assert(strcmp(fields[2], "c") == 0);
+    for (int i = 0; i < cnt; i++)
+        free(fields[i]);
+
+    cnt = split("a,,c", ',', fields, 10);
+    assert(cnt == 3);
+    assert(strcmp(fields[0], "a") == 0);
+    assert(strcmp(fields[1], "") == 0);
+    assert(strcmp(fields[2], "c") == 0);
+    for (int i = 0; i < cnt; i++)
+        free(fields[i]);
+}
+
+// Тест is_number
+static void testIsNumber()
+{
+    assert(isNumber("123") == 1);
+    assert(isNumber("-3.14") == 1);
+    assert(isNumber("abc") == 0);
+    assert(isNumber("") == 0);
+}
+
+// Тест reading_file
+static void testReadingFile()
+{
+    char* name = strdup("/tmp/test.csv");
+    FILE* f = fopen(name, "w");
+    assert(f);
+    fprintf(f, "A,B\n1,2\n3,4\n");
+    fclose(f);
+
+    char* argv[] = { "prog", name };
+    CSVData data;
+    int r = readingFile(argv, &data);
+    assert(r == 0);
+    assert(data.num_cols == 2);
+    assert(strcmp(data.header[0], "A") == 0);
+    assert(strcmp(data.header[1], "B") == 0);
+    assert(data.num_rows == 2);
+    assert(strcmp(data.rows[0].fields[0], "1") == 0);
+    assert(strcmp(data.rows[0].fields[1], "2") == 0);
+    freeCsvData(&data);
+    remove(name);
+    free(name);
+}
+
+// Тест print_table
+static void testPrintTable()
+{
+    CSVData data;
+    data.num_cols = 1;
+    data.header = malloc(sizeof(char*));
+    data.header[0] = strdup("X");
+    data.rows = malloc(sizeof(Row));
+    data.rows[0].fields = malloc(sizeof(char*));
+    data.rows[0].fields[0] = strdup("123");
+    data.rows[0].num_fields = 1;
+    data.num_rows = 1;
+
+    char outname[] = "/tmp/out.txt";
+    FILE* out = fopen(outname, "w");
+    assert(out);
+    printTable(&data, out);
+    fclose(out);
+
+    FILE* in = fopen(outname, "r");
+    assert(in);
+    char buf[256];
+    char expected[] = "+===+\n|X  |\n+===+\n|123|\n+---+\n";
+    char actual[256] = "";
+    while (fgets(buf, sizeof(buf), in))
+        strlcat(actual, buf, sizeof(actual));
+    fclose(in);
+    remove(outname);
+
+    assert(strcmp(actual, expected) == 0);
+    freeCsvData(&data);
+}
+
+int main()
+{
+    testSplit();
+    testIsNumber();
+    testReadingFile();
+    testPrintTable();
+    printf("Все тесты пройдены\n");
+    return 0;
+}
