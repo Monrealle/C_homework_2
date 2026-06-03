@@ -10,7 +10,7 @@ cd C_homework_2/src/DFA
 mkdir build && cd build
 cmake ..
 make
-
+```
 В результате в папке build появится исполняемый файл dfa.
 
 ## Использование
@@ -23,6 +23,7 @@ make
 Результат: Вывод проверок корректных и некоректных чисел.
 
 ## Структура проекта
+```
 .
 ├── include/                # Библиотеки
 │   └── dfa.h               # Заголовочный файл
@@ -33,6 +34,7 @@ make
 │   └── test_dfa.c          # Модульные тесты
 ├── CMakeLists.txt          # Конфигурация сборки
 └── README.md               # Этот файл
+```
 
 ## Лицензия
 [MIT LICENSE](https://github.com/Monrealle/C_homework_2/blob/main/LICENSE)
