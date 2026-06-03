@@ -22,3 +22,7 @@ Makefile
 
 # IDE
 .vscode/
+
+# Other
+airport-codes.csv
+airports.txt
