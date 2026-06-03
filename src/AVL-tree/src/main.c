@@ -10,58 +10,67 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define KS 16  /* макс. длина IATA-кода */
+#define KS 16 /* макс. длина IATA-кода */
 #define VS 256 /* макс. длина названия  */
 
 /* Узел АВЛ-дерева */
 typedef struct N {
     char k[KS], v[VS]; /* ключ (код) и значение (название) */
-    struct N *L, *R;   /* левый и правый потомки           */
-    int h;             /* высота поддерева                 */
+    struct N *L, *R; /* левый и правый потомки           */
+    int h; /* высота поддерева                 */
 } N;
 
 /* Вспомогательные функции для баланса */
-static int H(N *n) { 
+static int H(N* n)
+{
     return n ? n->h : 0;
 }
 
-static void upd(N *n) {
+static void upd(N* n)
+{
     int l = H(n->L);
-    int r = H(n->R); 
-    n->h = 1 + (l > r?l:r);
+    int r = H(n->R);
+    n->h = 1 + (l > r ? l : r);
 }
 
-static N *rotR(N *y) {
-    N *x = y->L;
+static N* rotR(N* y)
+{
+    N* x = y->L;
     y->L = x->R;
     x->R = y;
-    upd(y); upd(x);
+    upd(y);
+    upd(x);
 
     return x;
 }
 
-static N *rotL(N *x) {
-    N *y = x->R;
+static N* rotL(N* x)
+{
+    N* y = x->R;
     x->R = y->L;
     y->L = x;
-    upd(x); upd(y);
+    upd(x);
+    upd(y);
 
     return y;
 }
 
 /* Восстановить баланс: если дерево накренилось - повернуть */
-static N *bal(N *n) {
+static N* bal(N* n)
+{
     upd(n);
     int b = H(n->L) - H(n->R);
-    if (b > 1) { 
-        if (H(n->L->L) < H(n->L->R)) n->L = rotL(n->L);
-        
-        return rotR(n); 
+    if (b > 1) {
+        if (H(n->L->L) < H(n->L->R))
+            n->L = rotL(n->L);
+
+        return rotR(n);
     }
 
     if (b < -1) {
-        if (H(n->R->R) < H(n->R->L)) n->R = rotR(n->R);
-        
+        if (H(n->R->R) < H(n->R->L))
+            n->R = rotR(n->R);
+
         return rotL(n);
     }
 
@@ -69,12 +78,16 @@ static N *bal(N *n) {
 }
 
 /* Вставить ключ k со значением v (или обновить, если уже есть) */
-static N *ins(N *n, const char *k, const char *v) {
+static N* ins(N* n, const char* k, const char* v)
+{
     if (!n) {
-        N *p = malloc(sizeof *p);
-        strncpy(p->k, k, KS-1); p->k[KS-1] = 0;
-        strncpy(p->v, v, VS-1); p->v[VS-1] = 0;
-        p->L = p->R = NULL; p->h = 1;
+        N* p = malloc(sizeof *p);
+        strncpy(p->k, k, KS - 1);
+        p->k[KS - 1] = 0;
+        strncpy(p->v, v, VS - 1);
+        p->v[VS - 1] = 0;
+        p->L = p->R = NULL;
+        p->h = 1;
         return p;
     }
 
@@ -89,14 +102,15 @@ static N *ins(N *n, const char *k, const char *v) {
     }
 
     else {
-        strncpy(n->v, v, VS-1);   /* обновить существующий */
+        strncpy(n->v, v, VS - 1); /* обновить существующий */
     }
 
     return bal(n);
 }
 
 /* Найти значение по ключу; вернуть NULL если не найдено */
-static const char *get(N *n, const char *k) {
+static const char* get(N* n, const char* k)
+{
     while (n) {
         int c = strcmp(k, n->k);
 
@@ -117,7 +131,8 @@ static const char *get(N *n, const char *k) {
 }
 
 /* Удалить узел с ключом k */
-static N *del(N *n, const char *k) {
+static N* del(N* n, const char* k)
+{
     if (!n) {
         return NULL;
     }
@@ -133,13 +148,14 @@ static N *del(N *n, const char *k) {
     }
 
     else {
-        if (!n->L || !n->R) {           /* 0 или 1 потомок: просто вырезаем */
-            N *t = n->L ? n->L : n->R;
-            free(n); return t;
+        if (!n->L || !n->R) { /* 0 или 1 потомок: просто вырезаем */
+            N* t = n->L ? n->L : n->R;
+            free(n);
+            return t;
         }
 
         /* 2 потомка: заменяем данными наименьшего узла правого поддерева */
-        N *s = n->R;
+        N* s = n->R;
 
         while (s->L) {
             s = s->L;
@@ -154,7 +170,8 @@ static N *del(N *n, const char *k) {
 }
 
 /* Обход in-order: ключи идут в алфавитном порядке */
-static void each(N *n, void (*f)(const char *, const char *, void *), void *ctx) {
+static void each(N* n, void (*f)(const char*, const char*, void*), void* ctx)
+{
     if (!n) {
         return;
     }
@@ -165,20 +182,24 @@ static void each(N *n, void (*f)(const char *, const char *, void *), void *ctx)
 }
 
 /* Освободить всё дерево */
-static void freeT(N *n) {
+static void freeT(N* n)
+{
     if (!n) {
-        return; 
+        return;
     }
 
-    freeT(n->L); freeT(n->R); free(n);
+    freeT(n->L);
+    freeT(n->R);
+    free(n);
 }
 
 /* Загрузка и сохранение файла */
-static N *root = NULL;
-static int cnt  = 0;
+static N* root = NULL;
+static int cnt = 0;
 
-static int load(const char *path) {
-    FILE *f = fopen(path, "r");
+static int load(const char* path)
+{
+    FILE* f = fopen(path, "r");
 
     if (!f) {
         perror(path);
@@ -190,7 +211,7 @@ static int load(const char *path) {
 
     while (fgets(line, sizeof line, f)) {
         line[strcspn(line, "\n")] = 0;
-        char *c = strchr(line, ':');
+        char* c = strchr(line, ':');
         if (!c) {
             continue;
         }
@@ -204,15 +225,18 @@ static int load(const char *path) {
     return 0;
 }
 
-static void savecb(const char *k, const char *v, void *f) {
-    fprintf((FILE *)f, "%s:%s\n", k, v);
+static void savecb(const char* k, const char* v, void* f)
+{
+    fprintf((FILE*)f, "%s:%s\n", k, v);
 }
 
-static int save(const char *path) {
-    FILE *f = fopen(path, "w");
+static int save(const char* path)
+{
+    FILE* f = fopen(path, "w");
 
     if (!f) {
-        perror(path); return -1;
+        perror(path);
+        return -1;
     }
 
     each(root, savecb, f);
@@ -222,7 +246,8 @@ static int save(const char *path) {
 }
 
 /* main */
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[])
+{
     if (argc < 2) {
         fprintf(stderr, "Использование: %s airports.txt\n", argv[0]);
 
@@ -238,7 +263,8 @@ int main(int argc, char *argv[]) {
     char line[KS + VS + 16];
 
     while (1) {
-        printf("> "); fflush(stdout);
+        printf("> ");
+        fflush(stdout);
 
         if (!fgets(line, sizeof line, stdin)) {
             break;
@@ -249,18 +275,18 @@ int main(int argc, char *argv[]) {
         if (!strcmp(line, "quit")) {
             break;
 
-        } 
-        
+        }
+
         else if (!strncmp(line, "find ", 5)) {
-            const char *v = get(root, line + 5);
+            const char* v = get(root, line + 5);
 
             v ? printf("%s → %s\n", line + 5, v)
               : printf("Аэропорт с кодом '%s' не найден в базе.\n", line + 5);
 
-        } 
-        
+        }
+
         else if (!strncmp(line, "add ", 4)) {
-            char *c = strchr(line + 4, ':');
+            char* c = strchr(line + 4, ':');
 
             if (!c) {
                 puts("Формат: add <код>:<название>");
@@ -274,12 +300,12 @@ int main(int argc, char *argv[]) {
             }
 
         }
-        
+
         else if (!strncmp(line, "delete ", 7)) {
             if (!get(root, line + 7)) {
                 printf("Аэропорт с кодом '%s' не найден в базе.\n", line + 7);
-            } 
-            
+            }
+
             else {
                 root = del(root, line + 7);
                 cnt--;
@@ -287,7 +313,7 @@ int main(int argc, char *argv[]) {
             }
 
         }
-        
+
         else if (!strcmp(line, "save")) {
             int n = save(argv[1]);
 
@@ -295,8 +321,8 @@ int main(int argc, char *argv[]) {
                 printf("База сохранена: %d аэропортов.\n", n);
             }
 
-        } 
-        
+        }
+
         else if (line[0]) {
             puts("Команды: find <код> | add <код>:<название> | delete <код> | save | quit");
         }
